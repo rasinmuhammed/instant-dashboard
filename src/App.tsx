@@ -1,19 +1,29 @@
 import { LayoutDashboard, Code2, Terminal, Play, Sparkles } from 'lucide-react'
+import { generateDashboard } from './lib/groq'
 import React, { useState } from 'react'
+
 
 function App() {
   const [jsonInput, setJsonInput] = useState('')
   const [promptInput, setPromptInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [htmlContent, setHtmlContent] = useState('')
 
   const handleGenerate = async () => {
     if(!jsonInput) return
     setIsLoading(true)
 
-    // API Call
-    setTimeout(() => {
+    try{
+      const result = await generateDashboard(jsonInput, promptInput)
+      if (result) {
+        setHtmlContent(result)
+      }
+    } catch (error) {
+      console.error(error)
+      alert("Failed to generate dashboard. Check console for details.")
+    } finally {
       setIsLoading(false)
-    }, 1500);
+    }
   }
 
   return (
@@ -134,15 +144,24 @@ function App() {
             <div className='w-full h-full max-w-5xl bg-white rounded-lg shadow-xl border border-zinc-200 overflow-hidden relative group'>
 
               {/* Placeholder */}
-              <div className='absolute inset-0 flex items-center justify-center text-zinc-400 flex-col gap-6'>
-                <div className='w-24 h-24 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-500'>
-                  <LayoutDashboard className='w-10 h-10 opacity-20'/>
-                </div>
-                <div className='text-center space-y-1'>
-                  <p className='font-medium text-zinc-500'>Ready to Render</p>
-                  <p className='text-xs text-zinc-400 max-w-xs mx-auto'>Enter your JSON data and prompt to generate a preview</p>
-                </div>
-              </div>
+              { htmlContent ? (
+                <iframe
+                  srcDoc={htmlContent}
+                  title="Dashboard Preview"
+                  className='w-full h-full border-none'
+                  sandbox='allow-scripts'
+                  />
+              ) : (
+                  <div className='absolute inset-0 flex items-center justify-center text-zinc-400 flex-col gap-6'>
+                    <div className='w-24 h-24 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-500'>
+                      <LayoutDashboard className='w-10 h-10 opacity-20'/>
+                    </div>
+                    <div className='text-center space-y-1'>
+                      <p className='font-medium text-zinc-500'>Ready to Render</p>
+                      <p className='text-xs text-zinc-400 max-w-xs mx-auto'>Enter your JSON data and prompt to generate a preview</p>
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         </div>
